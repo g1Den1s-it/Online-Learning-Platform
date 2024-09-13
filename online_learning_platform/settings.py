@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
 
     "authorization",
+    "course",
 ]
 
 AUTH_USER_MODEL = "authorization.User"
