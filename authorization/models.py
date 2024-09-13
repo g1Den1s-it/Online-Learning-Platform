@@ -8,4 +8,4 @@ ROLE = (("Teacher", "Teacher"),
 
 
 class User(AbstractUser):
-    role = models.CharField(max_length=26, choices=ROLE, blank=False)
+    role = models.CharField(max_length=26, choices=ROLE, blank=False, default="Student")
