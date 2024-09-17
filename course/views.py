@@ -1,9 +1,10 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from authorization.models import User
 from .models import Course, Modul
 from .serializers import CourseSerializer, ModulSerializer
 
@@ -46,7 +47,32 @@ class ListCourseView(ListAPIView):
 
 
 class DetailCourseView(RetrieveAPIView):
-    lookup_field = "pk"
+    lookup_field = "slug"
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+
+
+class AddNewStudentView(UpdateAPIView):
+    lookup_field = "slug"
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    def update(self, request, *args, **kwargs):
+        student_id = request.data.get('student_id')
+
+        if not student_id:
+            return Response({"message": "wrong data"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        course = get_object_or_404(Course, slug=self.lookup_field)
+        student = get_object_or_404(User, id=student_id)
+
+        if student.role != 'student':
+            return Response({"message": "User is not student"})
+
+        course.students.add(student)
+        course.save()
+
+        return Response(status=status.HTTP_200_OK)
+
 
