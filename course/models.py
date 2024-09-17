@@ -19,13 +19,13 @@ class Course(models.Model):
     slug = models.SlugField(max_length=126, unique=True, blank=True)
     description = models.TextField()
     certificate_blank = models.FileField(upload_to=f"course/certificate")
-    owner = models.OneToOneField(User, on_delete=models.PROTECT)
+    owner = models.ForeignKey(User, on_delete=models.PROTECT)
     administrators = models.ManyToManyField(User, related_name="administrators_course")
     students = models.ManyToManyField(User, related_name="students_courses")
     is_complete = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        if self.slug:
+        if not self.slug:
             self.slug = uuid.uuid4()
 
         super().save(*args, **kwargs)
