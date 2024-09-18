@@ -3,32 +3,35 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 
 from authorization.models import User
 from .models import Course, Modul, UserCourse
+from .permissions import IsTeacher, IsStudent, IsCourseOwner
 from .serializers import CourseSerializer, ModulSerializer, UserCourseSerializer
 
 
 class CreateCourseView(CreateAPIView):
     queryset = Course.objects.all()
+    permission_classes = (IsTeacher, )
     serializer_class = CourseSerializer
 
 
 class CreateModul(CreateAPIView):
     queryset = Modul.objects.all()
+    permission_classes = (IsCourseOwner, )
     serializer_class = ModulSerializer
 
     def create(self, request, *args, **kwargs):
         data: dict = request.data
         file = request.FILES.get('video')
+        course_slug = kwargs.get('slug')
 
-        if not data.get('course'):
+        if not course_slug:
             return Response(
-                {"message": "must be course key"},
+                {"message": "Slug does not exist"},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        course = get_object_or_404(Course, id=data.get('course'))
+        course = get_object_or_404(Course, slug=course_slug)
 
         modul = Modul.objects.create(
             title=data.get('title'),
@@ -53,12 +56,11 @@ class DetailCourseView(RetrieveAPIView):
     serializer_class = CourseSerializer
 
 
-
 class AddNewStudentView(UpdateAPIView):
     lookup_field = "slug"
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsStudent, )
 
     def update(self, request, *args, **kwargs):
         student_id = request.data.get('student_id')
@@ -69,9 +71,6 @@ class AddNewStudentView(UpdateAPIView):
 
         course = get_object_or_404(Course, **{self.lookup_field: self.kwargs[self.lookup_field]})
         student = get_object_or_404(User, id=student_id)
-
-        if student.role != 'Student':
-            return Response({"message": "User is not student"})
 
         course.students.add(student)
         course.save()
