@@ -22,7 +22,6 @@ class Course(models.Model):
     owner = models.ForeignKey(User, on_delete=models.PROTECT)
     administrators = models.ManyToManyField(User, related_name="administrators_course")
     students = models.ManyToManyField(User, related_name="students_courses")
-    is_complete = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -40,8 +39,19 @@ class Modul(models.Model):
     description = models.TextField(blank=True, null=True)
     video = models.FileField(upload_to=get_upload_to)
     course = models.OneToOneField(Course, on_delete=models.CASCADE)
-    is_viewed = models.BooleanField(default=False)
     position = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.course.name[:10]} -- {self.title[:10]}'
+
+
+class UserCourse(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} -- {self.is_completed}'

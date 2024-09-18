@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Course, Modul
+from .models import Course, Modul, UserCourse
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -13,8 +13,7 @@ class CourseSerializer(serializers.ModelSerializer):
                   'slug',
                   'certificate_blank',
                   'owner',
-                  'amount_students',
-                  "is_complete")
+                  'amount_students')
 
 
     def get_amount_students(self, obj):
@@ -28,5 +27,16 @@ class ModulSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'title',
                   'description',
-                  'video',
-                  'is_viewed')
+                  'video')
+
+
+class UserCourseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserCourse
+        fields = ('id',
+                  'user',
+                  'course',
+                  'joined_at',
+                  'is_completed',
+                  'completed_at')

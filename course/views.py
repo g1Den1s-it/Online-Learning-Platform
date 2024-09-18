@@ -3,10 +3,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 from authorization.models import User
-from .models import Course, Modul
-from .serializers import CourseSerializer, ModulSerializer
+from .models import Course, Modul, UserCourse
+from .serializers import CourseSerializer, ModulSerializer, UserCourseSerializer
 
 
 class CreateCourseView(CreateAPIView):
@@ -52,10 +53,12 @@ class DetailCourseView(RetrieveAPIView):
     serializer_class = CourseSerializer
 
 
+
 class AddNewStudentView(UpdateAPIView):
     lookup_field = "slug"
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    permission_classes = (IsAuthenticated, )
 
     def update(self, request, *args, **kwargs):
         student_id = request.data.get('student_id')
@@ -64,14 +67,22 @@ class AddNewStudentView(UpdateAPIView):
             return Response({"message": "wrong data"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        course = get_object_or_404(Course, slug=self.lookup_field)
+        course = get_object_or_404(Course, **{self.lookup_field: self.kwargs[self.lookup_field]})
         student = get_object_or_404(User, id=student_id)
 
-        if student.role != 'student':
+        if student.role != 'Student':
             return Response({"message": "User is not student"})
 
         course.students.add(student)
         course.save()
+
+        serializer = UserCourseSerializer(data={
+            "user": student.id,
+            "course": course.id,
+        })
+
+        if serializer.is_valid():
+            serializer.save()
 
         return Response(status=status.HTTP_200_OK)
 
