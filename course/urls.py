@@ -4,7 +4,8 @@ from .views import (
     CreateModul,
     ListCourseView,
     DetailCourseView,
-    AddNewStudentView)
+    AddNewStudentView,
+    CreateCertificateView)
 
 
 urlpatterns = [
@@ -12,5 +13,7 @@ urlpatterns = [
     path('cousers/<str:slug>/create-modul/', CreateModul.as_view(), name='create-modul'),
     path('cousers/', ListCourseView.as_view(), name='list-course'),
     path('cousers/<str:slug>/', DetailCourseView.as_view(), name='detail-course'),
-    path('cousers/<str:slug>/add/', AddNewStudentView.as_view(), name="add_student")
+    path('cousers/<str:slug>/add/', AddNewStudentView.as_view(), name="add_student"),
+    path('cousers/<str:slug>/certificate/', CreateCertificateView.as_view(), name='create-certificate'),
+
 ]

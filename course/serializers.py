@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Course, Modul, UserCourse
+from .models import Course, Modul, UserCourse, UserCertificate
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -40,3 +40,10 @@ class UserCourseSerializer(serializers.ModelSerializer):
                   'joined_at',
                   'is_completed',
                   'completed_at')
+
+
+class UserCertificateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserCertificate
+        fields = ('id', 'certificate', 'course', 'user')

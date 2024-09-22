@@ -5,9 +5,10 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from authorization.models import User
-from .models import Course, Modul, UserCourse
+from .models import Course, Modul, UserCourse, UserCertificate
 from .permissions import IsTeacher, IsStudent, IsCourseOwner
-from .serializers import CourseSerializer, ModulSerializer, UserCourseSerializer
+from .serializers import CourseSerializer, ModulSerializer, UserCourseSerializer, UserCertificateSerializer
+from .task import create_certificate
 
 
 class CreateCourseView(CreateAPIView):
@@ -86,3 +87,40 @@ class AddNewStudentView(UpdateAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class CreateCertificateView(CreateAPIView):
+    permission_classes = (IsStudent, )
+
+    def create(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
+        slug = kwargs.get("slug")
+
+        user = get_object_or_404(User, id=user_id)
+        course = get_object_or_404(Course, slug=slug)
+        user_course = get_object_or_404(UserCourse, user=user_id, course=course.id)
+
+        if UserCertificate.objects.filter(user=user, course=course).exists():
+            return Response({'message': 'You already have certificate for this course!'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not user_course.is_completed:
+            return Response({'message': "you didn't finish course yet, to get certificate"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.first_name and not user.last_name:
+            return Response({'message': "To get certificate, you must fill 'first_name' and 'last_name'!"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user_certificate = UserCertificate.objects.create(user=user, course=course)
+
+        user_certificate.save()
+
+        create_certificate.delay(
+            f'{user.first_name} {user.last_name}',
+            course.name,
+            user_course.completed_at,
+            course.certificate_blank.path,
+            user_certificate.pk
+        )
+
+        return Response({'message': 'Thanks, your certificate will be created in several minutes.'},
+                        status=status.HTTP_201_CREATED)

@@ -55,3 +55,12 @@ class UserCourse(models.Model):
 
     def __str__(self):
         return f'{self.user.username} -- {self.is_completed}'
+
+
+class UserCertificate(models.Model):
+    certificate = models.FileField(upload_to="course/certificate/completed")
+    course = models.ForeignKey(Course, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return f"{self.user.username}"
