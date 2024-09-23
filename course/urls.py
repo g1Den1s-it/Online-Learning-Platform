@@ -5,15 +5,18 @@ from .views import (
     ListCourseView,
     DetailCourseView,
     AddNewStudentView,
-    CreateCertificateView)
+    CreateCertificateView,
+    ListCertificateView)
 
 
 urlpatterns = [
-    path('cousers/create-course/', CreateCourseView.as_view(), name='create-course'),
-    path('cousers/<str:slug>/create-modul/', CreateModul.as_view(), name='create-modul'),
-    path('cousers/', ListCourseView.as_view(), name='list-course'),
-    path('cousers/<str:slug>/', DetailCourseView.as_view(), name='detail-course'),
-    path('cousers/<str:slug>/add/', AddNewStudentView.as_view(), name="add_student"),
-    path('cousers/<str:slug>/certificate/', CreateCertificateView.as_view(), name='create-certificate'),
+    path('courses/create-course/', CreateCourseView.as_view(), name='create-course'),
+    path('courses/<str:slug>/create-modul/', CreateModul.as_view(), name='create-modul'),
+    path('courses/', ListCourseView.as_view(), name='list-course'),
+    path('courses/<str:slug>/', DetailCourseView.as_view(), name='detail-course'),
+    path('courses/<str:slug>/add/', AddNewStudentView.as_view(), name="add_student"),
+    path('courses/<str:slug>/certificate/', CreateCertificateView.as_view(), name='create-certificate'),
+    path('courses/user/certificate', ListCertificateView.as_view(), name="user-certificate"),
+
 
 ]

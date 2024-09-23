@@ -1,3 +1,4 @@
+import jwt
 from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
@@ -5,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from authorization.models import User
+from online_learning_platform import settings
 from .models import Course, Modul, UserCourse, UserCertificate
 from .permissions import IsTeacher, IsStudent, IsCourseOwner
 from .serializers import CourseSerializer, ModulSerializer, UserCourseSerializer, UserCertificateSerializer
@@ -124,3 +126,25 @@ class CreateCertificateView(CreateAPIView):
 
         return Response({'message': 'Thanks, your certificate will be created in several minutes.'},
                         status=status.HTTP_201_CREATED)
+
+
+class ListCertificateView(ListAPIView):
+    queryset = UserCertificate.objects.all()
+    serializer_class = UserCertificateSerializer
+    permission_classes = (IsStudent, )
+
+    def get(self, request, *args, **kwargs):
+        token_jwt = request.headers.get('Authorization')
+        token = token_jwt.split(' ')[1]
+        try:
+            decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user_id = decoded_data.get("user_id")
+
+            user_certificates = UserCertificate.objects.filter(user=user_id)
+            serializer = self.get_serializer(user_certificates, many=True)
+
+            return Response(serializer.data)
+
+        except:
+            return Response({"message": "invalid token"},
+                            status=status.HTTP_401_UNAUTHORIZED)
