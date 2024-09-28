@@ -148,3 +148,15 @@ class ListCertificateView(ListAPIView):
         except:
             return Response({"message": "invalid token"},
                             status=status.HTTP_401_UNAUTHORIZED)
+
+
+class UpdateCourseView(UpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = (IsCourseOwner, )
+
+
+class UpdateModuleView(UpdateCourseView):
+    queryset = Modul.objects.all()
+    serializer_class = ModulSerializer
+    permission_classes = (IsCourseOwner, )
