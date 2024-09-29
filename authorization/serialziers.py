@@ -36,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
             role=validated_data['role'],
         )
 
-        user.password = validated_data['password']
+        user.set_password(validated_data['password'])
         user.save()
 
         return user
