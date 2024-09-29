@@ -152,6 +152,7 @@ class ListCertificateView(ListAPIView):
 
 class UpdateCourseView(UpdateAPIView):
     queryset = Course.objects.all()
+    lookup_field = "slug"
     serializer_class = CourseSerializer
     permission_classes = (IsCourseOwner, )
 
@@ -159,4 +160,5 @@ class UpdateCourseView(UpdateAPIView):
 class UpdateModuleView(UpdateCourseView):
     queryset = Modul.objects.all()
     serializer_class = ModulSerializer
+    lookup_field = "slug"
     permission_classes = (IsCourseOwner, )
